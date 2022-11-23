@@ -55,15 +55,6 @@
 #     - czertainly
 #     - czertainly_user
 
-- name: Set authorized key to czertainly user
-  ansible.posix.authorized_key:
-    user: czertainly
-    state: present
-    key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC+PQidDcWwKFnQmerUdsJwC+tgs6torEoRlQBjhctXruDHIPkgxUJg9xN5GS0ppubUhjhDAFvV0iOyQ2h/yAlb93Jm1YSKS5aAVu0nNqxVs/xpWgx0osZP4v+p/h8pQu+wnr0QtGxTXaxGKxQBZxiWOiqGGGqVRPtggur6o3EOmVZXOb8gYNMuqSrGt92MGOIrXEclEVId30ZzVTRTy2JGcDWkjItk0kKSzvlUgiuaYeP/TJRuTQSw8O6TLN1Gwx4y02uP4uqOsujA05ZmXbaGrYfu5DkimoB2BRwMwTT5e39YT2hZWdDxBDCrbTpKQhKLZ8FHyPPXwt4XHkjJSY+J jakub@Delli"
-  tags:
-    - czertainly
-    - czertainly_user 
-
 ### Branding
 
 - name: Set grub options
