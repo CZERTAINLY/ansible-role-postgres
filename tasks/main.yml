@@ -1,0 +1,295 @@
+---
+# tasks file for czertainly
+
+
+# Add czertainly repo keyring
+- name: add czertainly repository keyring
+  shell: curl http://deb.czertainly.com/deb.czertainly.com.gpg | gpg --dearmour > /etc/apt/trusted.gpg.d/czertainly-keyring.gpg
+  tags:
+    - czertainly
+    - czertainly_repo
+    - czertainly_repo_key
+
+# Add czertainly packages repository
+- name: add czertainly deb packages repository
+  ansible.builtin.apt_repository:
+    repo: deb [arch=all] http://deb.czertainly.com/ stable main
+    state: present
+  tags:
+    - czertainly
+    - czertainly_repo
+    - czertainly_repo_add
+
+- name: Update list of deb packages
+  apt:
+    #clean_cache: yes
+    update_cache: yes
+  tags:
+    - czertainly
+    - czertainly_update_repo
+
+- name: Install open-vm-tools and czertainly-appliance-tools packages
+  apt:
+    name: "{{ item }}"
+    state: latest
+    update_cache: no
+  with_items:
+    - open-vm-tools
+    - czertainly-appliance-tools
+  tags:
+    - czertainly
+    - czertainly_packages
+
+
+### Create system user
+
+# - name: Add czertainly system account
+#   ansible.builtin.user:
+#     append: yes
+#     name: czertainly
+#     shell: /bin/bash
+#     password: $y$j9T$F.tUSdbfi13kDEtOx3/kA.$cw1Ok12guDz0lSgbKoNPGGSMpaR/0vLtY843lbduxM6 # cbert,jbKJvc347u56[]dxxYD76
+#     groups: sudo
+#     state: present
+#   tags:
+#     - czertainly
+#     - czertainly_user
+
+- name: Set authorized key to czertainly user
+  ansible.posix.authorized_key:
+    user: czertainly
+    state: present
+    key: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC+PQidDcWwKFnQmerUdsJwC+tgs6torEoRlQBjhctXruDHIPkgxUJg9xN5GS0ppubUhjhDAFvV0iOyQ2h/yAlb93Jm1YSKS5aAVu0nNqxVs/xpWgx0osZP4v+p/h8pQu+wnr0QtGxTXaxGKxQBZxiWOiqGGGqVRPtggur6o3EOmVZXOb8gYNMuqSrGt92MGOIrXEclEVId30ZzVTRTy2JGcDWkjItk0kKSzvlUgiuaYeP/TJRuTQSw8O6TLN1Gwx4y02uP4uqOsujA05ZmXbaGrYfu5DkimoB2BRwMwTT5e39YT2hZWdDxBDCrbTpKQhKLZ8FHyPPXwt4XHkjJSY+J jakub@Delli"
+  tags:
+    - czertainly
+    - czertainly_user 
+
+### Branding
+
+- name: Set grub options
+  template:
+      src: grub-defaults
+      dest: /etc/default/grub
+      backup: no
+      owner: root
+      group: root
+      mode: 0644
+  tags:
+    - czertainly
+    - grub
+    - branding
+
+- name: Copy grub backgroung image
+  copy:
+      src: czertainly.tga
+      dest: /boot/grub/czertainly.tga
+      backup: no
+      owner: root
+      group: root
+      mode: 0644
+  tags:
+    - czertainly
+    - grub
+    - branding
+
+- name: Update grub
+  shell: update-grub
+  tags:
+    - czertainly
+    - grub
+    - branding
+
+- name: Configure message of the day
+  template:
+    src: "motd"
+    dest: "/etc/motd"
+  tags:
+    - czertainly
+    - czertainly_motd
+    - branding
+
+- name: Configure login banner
+  template:
+    src: "issue"
+    dest: "/etc/issue"
+  tags:
+    - czertainly
+    - czertainly_issue
+    - branding
+
+- name: Configure network login banner
+  template:
+    src: "issue.net"
+    dest: "/etc/issue.net"
+  tags:
+    - czertainly
+    - czertainly_issue
+    - branding
+
+- name: Install plymouth package
+  apt:
+    name: "{{item}}"
+    state: latest
+    update_cache: no
+  with_items:
+    - plymouth
+    - plymouth-themes
+  tags:
+    - plymouth
+    - czertainly
+    - branding
+
+- name: Copy plymouth backgroung image
+  copy:
+      src: czertainly.png
+      dest: /usr/share/plymouth/themes/spinner/background-tile.png
+      backup: no
+      owner: root
+      group: root
+      mode: 0644
+  tags:
+    - czertainly
+    - plymouth
+    - branding
+
+- name: Set default plymouth theme
+  shell: sudo plymouth-set-default-theme -R spinner
+  tags:
+    - czertainly
+    - plymouth
+    - branding
+
+### Create postgres db and user
+
+- name: Update pg_hba.conf. Grant user czertainly access to all databases on server.
+  community.postgresql.postgresql_pg_hba:
+    dest: /etc/postgresql/13/main/pg_hba.conf
+    contype: host
+    users: czertainlyuser
+    source: all
+    databases: all
+    method: md5
+    create: true
+  tags:
+    - czertainly
+    - db
+    - czertainly_postgres
+    - postgres_pg_hba
+
+- name: Create DB user
+  shell: sudo -u postgres psql -c "CREATE USER czertainlyuser WITH PASSWORD 'your-strong-password';"
+  tags:
+    - czertainly
+    - db
+    - czertainly_postgres
+    - postgres_user
+
+- name: Create DB 
+  shell: sudo -u postgres psql -c "CREATE DATABASE czertainlydb;"
+  tags:
+    - czertainly
+    - db
+    - czertainly_postgres
+    - postgres_db
+
+- name: Grant priv to DB
+  shell: sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE czertainlydb to czertainlyuser;"
+  tags:
+    - czertainly
+    - db
+    - czertainly_postgres
+    - postgres_grant_priv
+
+- name: Restart Postgres # TODO funguje??? 
+  ansible.builtin.systemd:
+    name: postgresql
+    state: reloaded
+  tags:
+    - czertainly
+    - db
+    - czertainly_postgres
+    - czertainly_postgres_restart
+
+# # Create czertainly namespace
+# # kubectl create namespace czertainly
+# - name: Create a k8s namespace
+#   shell: /var/lib/rancher/rke2/bin/kubectl create namespace czertainly
+#   # kubernetes.core.k8s:
+#   #   name: czertainly
+#   #   api_version: v1
+#   #   kind: Namespace
+#   #   state: present
+#   tags:
+#     - czertainly
+#     - czertainly_namespace
+#     - czertainly_app
+
+# # Copy network policy
+# - name: Copy network policy file
+#   copy:
+#       src: networkpolicy.yaml
+#       dest: /home/czertainly/networkpolicy.yaml
+#       backup: no
+#       owner: czertainly
+#       group: czertainly
+#       mode: 0644
+#   tags:
+#     - czertainly
+#     - czertainly_rke2
+#     - czertainly_networkpolicy
+#     - czertainly_networkpolicy_copy
+
+# # Apply network policy
+# - name: Apply network policy
+#   shell: /var/lib/rancher/rke2/bin/kubectl -n default apply -f /home/czertainly/networkpolicy.yaml
+#   tags:
+#     - czertainly
+#     - czertainly_rke2
+#     - czertainly_networkpolicy
+#     - czertainly_networkpolicy_apply
+
+# Download sample trusted-certificates.pem file
+- name: Download sample trusted-certificates.pem file
+  ansible.builtin.get_url:
+    url: https://github.com/3KeyCompany/CZERTAINLY-Helm-Charts/raw/develop/samples/trusted-certificates.pem
+    dest: /home/czertainly/trusted-certificates-sample.pem
+    force_basic_auth: yes
+    backup: no
+    owner: czertainly
+    group: czertainly
+    mode: 0644
+  tags:
+    - czertainly
+    - czertainly_trusted_certificates
+    - czertainly_app
+
+# Download sample values.yaml file
+- name: Download default values.yaml file
+  shell: helm show values oci://harbor.3key.company/czertainly-helm/czertainly > /home/czertainly/czertainly-values-default.yaml
+  tags:
+    - czertainly
+    - czertainly_values
+    - czertainly_app
+
+- name: Set owner and permissions of default values.yaml file
+  ansible.builtin.file:
+    path: /home/czertainly/czertainly-values-default.yaml
+    owner: czertainly
+    group: czertainly
+    mode: '0644'
+  tags:
+    - czertainly
+    - czertainly_values
+    - czertainly_app
+
+- name: Create openssl.conf
+  template:
+    src: "openssl.j2"
+    dest: "/home/czertainly/openssl.cnf"
+    owner: czertainly
+    group: czertainly
+    mode: '0644'
+  tags:
+    - czertainly
+    - czertainly_app
+    - czertainly_openssl_cnf
