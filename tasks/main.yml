@@ -1,14 +1,13 @@
 ---
 # tasks file for czertainly
 
-- name: Install open-vm-tools and czertainly-appliance-tools packages
+- name: Install open-vm-tools packages
   apt:
     name: "{{ item }}"
     state: latest
     update_cache: no
   with_items:
     - open-vm-tools
-    - czertainly-appliance-tools
   tags:
     - czertainly
     - czertainly_packages
