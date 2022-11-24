@@ -1,33 +1,6 @@
 ---
 # tasks file for czertainly
 
-
-# Add czertainly repo keyring
-- name: add czertainly repository keyring
-  shell: curl http://deb.czertainly.com/deb.czertainly.com.gpg | gpg --dearmour > /etc/apt/trusted.gpg.d/czertainly-keyring.gpg
-  tags:
-    - czertainly
-    - czertainly_repo
-    - czertainly_repo_key
-
-# Add czertainly packages repository
-- name: add czertainly deb packages repository
-  ansible.builtin.apt_repository:
-    repo: deb [arch=all] http://deb.czertainly.com/ stable main
-    state: present
-  tags:
-    - czertainly
-    - czertainly_repo
-    - czertainly_repo_add
-
-- name: Update list of deb packages
-  apt:
-    #clean_cache: yes
-    update_cache: yes
-  tags:
-    - czertainly
-    - czertainly_update_repo
-
 - name: Install open-vm-tools and czertainly-appliance-tools packages
   apt:
     name: "{{ item }}"
