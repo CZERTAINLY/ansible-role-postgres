@@ -1,3 +1,0 @@
-GRUB_CMDLINE_LINUX_DEFAULT="quiet splash"
-GRUB_DISTRIBUTOR="CZERTAINLY Appliance"
-GRUB_BACKGROUND=/boot/grub/czertainly.tga
