@@ -3,104 +3,16 @@
 
 - name: Install open-vm-tools packages
   apt:
-    name: "{{ item }}"
+    name: open-vm-tools
     state: latest
     update_cache: no
-  with_items:
-    - open-vm-tools
   tags:
     - czertainly
     - czertainly_packages
+  when: false # TODO check for virtualization type but also conflict with idea of creating appliance in VirtualBox and exporting for others
 
-
-### Create postgres db and user
-
-- name: Update pg_hba.conf. Grant user czertainly access to all databases on server.
-  community.postgresql.postgresql_pg_hba:
-    dest: /etc/postgresql/13/main/pg_hba.conf
-    contype: host
-    users: czertainlyuser
-    source: all
-    databases: all
-    method: md5
-    create: true
-  tags:
-    - czertainly
-    - db
-    - czertainly_postgres
-    - postgres_pg_hba
-
-- name: Create DB user
-  shell: sudo -u postgres psql -c "CREATE USER czertainlyuser WITH PASSWORD 'your-strong-password';"
-  tags:
-    - czertainly
-    - db
-    - czertainly_postgres
-    - postgres_user
-
-- name: Create DB 
-  shell: sudo -u postgres psql -c "CREATE DATABASE czertainlydb;"
-  tags:
-    - czertainly
-    - db
-    - czertainly_postgres
-    - postgres_db
-
-- name: Grant priv to DB
-  shell: sudo -u postgres psql -c "GRANT ALL PRIVILEGES ON DATABASE czertainlydb to czertainlyuser;"
-  tags:
-    - czertainly
-    - db
-    - czertainly_postgres
-    - postgres_grant_priv
-
-- name: Restart Postgres # TODO funguje??? 
-  ansible.builtin.systemd:
-    name: postgresql
-    state: reloaded
-  tags:
-    - czertainly
-    - db
-    - czertainly_postgres
-    - czertainly_postgres_restart
-
-# # Create czertainly namespace
-# # kubectl create namespace czertainly
-# - name: Create a k8s namespace
-#   shell: /var/lib/rancher/rke2/bin/kubectl create namespace czertainly
-#   # kubernetes.core.k8s:
-#   #   name: czertainly
-#   #   api_version: v1
-#   #   kind: Namespace
-#   #   state: present
-#   tags:
-#     - czertainly
-#     - czertainly_namespace
-#     - czertainly_app
-
-# # Copy network policy
-# - name: Copy network policy file
-#   copy:
-#       src: networkpolicy.yaml
-#       dest: /home/czertainly/networkpolicy.yaml
-#       backup: no
-#       owner: czertainly
-#       group: czertainly
-#       mode: 0644
-#   tags:
-#     - czertainly
-#     - czertainly_rke2
-#     - czertainly_networkpolicy
-#     - czertainly_networkpolicy_copy
-
-# # Apply network policy
-# - name: Apply network policy
-#   shell: /var/lib/rancher/rke2/bin/kubectl -n default apply -f /home/czertainly/networkpolicy.yaml
-#   tags:
-#     - czertainly
-#     - czertainly_rke2
-#     - czertainly_networkpolicy
-#     - czertainly_networkpolicy_apply
+- name: install and configure postgres
+  include: postgres.yml
 
 # Download sample trusted-certificates.pem file
 - name: Download sample trusted-certificates.pem file
