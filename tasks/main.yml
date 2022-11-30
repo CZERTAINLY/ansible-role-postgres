@@ -13,21 +13,6 @@
     - czertainly_packages
 
 
-### Create system user
-
-# - name: Add czertainly system account
-#   ansible.builtin.user:
-#     append: yes
-#     name: czertainly
-#     shell: /bin/bash
-#     password: $y$j9T$F.tUSdbfi13kDEtOx3/kA.$cw1Ok12guDz0lSgbKoNPGGSMpaR/0vLtY843lbduxM6 # cbert,jbKJvc347u56[]dxxYD76
-#     groups: sudo
-#     state: present
-#   tags:
-#     - czertainly
-#     - czertainly_user
-
-
 ### Create postgres db and user
 
 - name: Update pg_hba.conf. Grant user czertainly access to all databases on server.
