@@ -48,6 +48,4 @@ galaxy_info:
     #       Maximum 20 tags per role.
 
 dependencies:
-#  - role: ansible-control-node
   - role: rke2
-  - role: postgres
