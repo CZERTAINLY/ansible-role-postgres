@@ -32,6 +32,8 @@
 # Download sample values.yaml file
 - name: Download default values.yaml file
   shell: helm show values oci://harbor.3key.company/czertainly-helm/czertainly > /home/czertainly/czertainly-values-default.yaml
+  args:
+    creates: /home/czertainly/czertainly-values-default.yaml
   tags:
     - czertainly
     - czertainly_values
