@@ -8,7 +8,7 @@
 # this will always overwrite target file and we are ignoring change
 - name: create secret for harbor
   ansible.builtin.shell:
-    cmd: kubectl create secret -n czertainly docker-registry {{ docker.secret }} --docker-server={{ docker.server }} --docker-username={{ docker.username }} --docker-password={{ docker.password }} --docker-email={{ docker.email }} --dry-run='client' -o yaml > /root/install/docker-secret.yaml
+    cmd: /var/lib/rancher/rke2/bin/kubectl create secret -n czertainly docker-registry {{ docker.secret }} --docker-server={{ docker.server }} --docker-username={{ docker.username }} --docker-password={{ docker.password }} --docker-email={{ docker.email }} --dry-run='client' -o yaml > /root/install/docker-secret.yaml
   changed_when: false
 
 # this apply only when changed - there must be more elegant way, but
@@ -75,9 +75,9 @@
 
 #   helm install [NAME] [CHART] [flags]
 
-- name: install czertainly
-  kubernetes.core.helm:
-    values_files: /home/czertainly/czertainly-values.yaml
-    release_namespace: czertainly
-    release_name: czertianly-tlm
-    chart_ref: oci://harbor.3key.company/czertainly-helm/czertainly
+      #- name: install czertainly
+      #  kubernetes.core.helm:
+      #    values_files: /home/czertainly/czertainly-values.yaml
+      #    release_namespace: czertainly
+      #    release_name: czertianly-tlm
+      #    chart_ref: oci://harbor.3key.company/czertainly-helm/czertainly
