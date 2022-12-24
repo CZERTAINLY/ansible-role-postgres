@@ -74,10 +74,12 @@
 #helm install --namespace czertainly -f /home/czertainly/czertainly-values-default.yaml $PULL_SERCRET --set-file trusted.certificates=/home/czertainly/trusted-certificates-sample.pem czertainly-tlm oci://harbor.3key.company/czertainly-helm/czertainly
 
 #   helm install [NAME] [CHART] [flags]
+#
+#   helm list -a -A -o json | jq .
 
-      #- name: install czertainly
-      #  kubernetes.core.helm:
-      #    values_files: /home/czertainly/czertainly-values.yaml
-      #    release_namespace: czertainly
-      #    release_name: czertianly-tlm
-      #    chart_ref: oci://harbor.3key.company/czertainly-helm/czertainly
+- name: install czertainly
+  kubernetes.core.helm:
+    values_files: /home/czertainly/czertainly-values.yaml
+    release_namespace: czertainly
+    release_name: czertainly-tlm
+    chart_ref: oci://harbor.3key.company/czertainly-helm/czertainly
