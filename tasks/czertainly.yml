@@ -36,39 +36,38 @@
     - czertainly_trusted_certificates
     - czertainly_app
 
-# Download sample values.yaml file
-# - name: Download default values.yaml file
-#   shell: helm show values oci://harbor.3key.company/czertainly-helm/czertainly > /home/czertainly/czertainly-values-default.yaml
-#   args:
-#     creates: /home/czertainly/czertainly-values-default.yaml
-#   tags:
-#     - czertainly
-#     - czertainly_values
-#     - czertainly_app
-
 #- debug: var=ansible
 
-- name: Create openssl.conf
-  template:
-    src: "openssl.j2"
-    dest: "/home/czertainly/openssl.cnf"
-    owner: czertainly
-    group: czertainly
-    mode: '0644'
-  tags:
-    - czertainly
-    - czertainly_app
-    - czertainly_openssl_cnf
+# - name: Create openssl.conf
+#   template:
+#     src: "openssl.j2"
+#     dest: "/home/czertainly/openssl.cnf"
+#     owner: czertainly
+#     group: czertainly
+#     mode: '0644'
+#   tags:
+#     - czertainly
+#     - czertainly_app
+#     - czertainly_openssl_cnf
 
-- name: create values file
+- name: download default values.yaml file
+  shell: helm show values oci://harbor.3key.company/czertainly-helm/czertainly > /tmp/czertainly-values-default.yaml
+  changed_when: false
+  tags:
+    - czertainly
+    - czertainly_values
+    - czertainly_app
+
+- name: copy default values.yaml file
   template:
-    src: "czertainly-values.yaml.j2"
-    dest: "/home/czertainly/czertainly-values.yaml"
+    src: "/tmp/czertainly-values-default.yaml"
+    dest: "/root/install/czertainly-values.yaml"
     owner: czertainly
     group: czertainly
     mode: '0644'
   tags:
     - czertainly
+    - czertainly_values
     - czertainly_app
 
 #helm install --namespace czertainly -f /home/czertainly/czertainly-values-default.yaml $PULL_SERCRET --set-file trusted.certificates=/home/czertainly/trusted-certificates-sample.pem czertainly-tlm oci://harbor.3key.company/czertainly-helm/czertainly
@@ -79,7 +78,22 @@
 
 - name: install czertainly
   kubernetes.core.helm:
-    values_files: /home/czertainly/czertainly-values.yaml
     release_namespace: czertainly
     release_name: czertainly-tlm
     chart_ref: oci://harbor.3key.company/czertainly-helm/czertainly
+    values_files: /root/install/czertainly-values.yaml
+    values:
+      global:
+        imagePullSecrets:
+          - name: "{{ docker.secret }}"
+        database:
+          host: "{{ ansible_default_ipv4.address }}"
+      hostName: "{{ ansible_fqdn }}"
+      ingress:
+        enabled: true
+      trusted:
+        certificates: "{{ lookup('ansible.builtin.file', '/home/czertainly/trusted-certificates-sample.pem') }}"
+  tags:
+    - czertainly
+    - czertainly_app
+    - czertainly_helm_install
