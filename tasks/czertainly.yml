@@ -53,7 +53,7 @@
 
 - name: wait till prerequisites are ready (max 10min, delay=5s)
   shell:
-    cmd: "kubectl -n {{ item }} get pods -o json |jq '.items[].status.phase' | grep -v Succeeded | sort -u"
+    cmd: "/var/lib/rancher/rke2/bin/kubectl -n {{ item }} get pods -o json |jq '.items[].status.phase' | grep -v Succeeded | sort -u"
   register: prq
   until: prq.stdout == '"Running"'
   retries: 120
@@ -69,7 +69,7 @@
 
 - name: debug
   shell:
-    cmd: "kubectl -n ingress-nginx get pods -o json |jq '.items[].status.phase' | sort -u"
+    cmd: "/var/lib/rancher/rke2/bin/kubectl -n ingress-nginx get pods -o json |jq '.items[].status.phase' | sort -u"
   register: out
   tags:
     - czertainly
