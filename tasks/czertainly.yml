@@ -67,20 +67,20 @@
     - czertainly_app
     - czertainly_helm_install
 
-- name: debug
-  shell:
-    cmd: "/var/lib/rancher/rke2/bin/kubectl -n ingress-nginx get pods -o json |jq '.items[].status.phase' | sort -u"
-  register: out
-  tags:
-    - czertainly
-    - czertainly_app
-    - czertainly_helm_install
+# - name: debug
+#   shell:
+#     cmd: "/var/lib/rancher/rke2/bin/kubectl -n ingress-nginx get pods -o json |jq '.items[].status.phase' | sort -u"
+#   register: out
+#   tags:
+#     - czertainly
+#     - czertainly_app
+#     - czertainly_helm_install
 
-- debug: var=out
-  tags:
-    - czertainly
-    - czertainly_app
-    - czertainly_helm_install
+# - debug: var=out
+#   tags:
+#     - czertainly
+#     - czertainly_app
+#     - czertainly_helm_install
 
 - name: download default values.yaml file
   shell: helm show values oci://harbor.3key.company/czertainly-helm/czertainly > /tmp/czertainly-values-default.yaml
