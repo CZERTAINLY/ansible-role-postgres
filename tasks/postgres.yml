@@ -10,16 +10,13 @@
     state: latest
     cache_valid_time: 86400
   tags:
-    - db
-    - postgres
+    - apt-packages
 
 - name: enable Postgres
   ansible.builtin.systemd:
     name: postgresql
     enabled: yes
   tags:
-    - db
-    - postgres
     - postgres_enable
 
 - name: Postgresql should listen on all ports
@@ -28,8 +25,6 @@
               line="listen_addresses = '*'"
               state=present
   tags:
-    - db
-    - postgres
     - postgres_listen
   notify:
     restart postgresql
@@ -45,10 +40,8 @@
     method: md5
     create: true
   tags:
-    - czertainly
-    - db
-    - czertainly_postgres
     - postgres_pg_hba
+    - postgress_czertainly_remote_access
   notify:
     restart postgresql
 
@@ -58,10 +51,7 @@
   community.postgresql.postgresql_db:
     name: czertainlydb
   tags:
-    - czertainly
-    - db
-    - czertainly_postgres
-    - postgres_db
+    - postgress_czertainly_db
 
 - name: create czertainlyuser
   become: yes
@@ -72,10 +62,7 @@
     password: your-strong-password # TODO take from some config
   when: not ansible_check_mode # will fail in check mode if db isn't present
   tags:
-    - czertainly
-    - db
-    - czertainly_postgres
-    - postgres_user
+    - postgress_czertainly_user
 
 - name: grant ALL priv to czertainlydb to czertainlyuser
   become: yes
@@ -88,7 +75,4 @@
     role: czertainlyuser
   when: not ansible_check_mode # will fail in check mode if db isn't present
   tags:
-    - czertainly
-    - db
-    - czertainly_postgres
-    - postgres_grant_priv
+    - postgress_czertainly_grant_all

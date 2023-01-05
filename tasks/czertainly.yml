@@ -5,12 +5,16 @@
     wait: true
     state: present
     src: /etc/ansible/roles/host-config/files/namespace-czertainly.yaml
+  tags:
+    - czertainly_namespace
 
 # this will always overwrite target file and we are ignoring change
 - name: create secret for harbor
   ansible.builtin.shell:
     cmd: /var/lib/rancher/rke2/bin/kubectl create secret -n czertainly docker-registry {{ docker.secret }} --docker-server={{ docker.server }} --docker-username={{ docker.username }} --docker-password={{ docker.password }} --docker-email={{ docker.email }} --dry-run='client' -o yaml > /root/install/docker-secret.yaml
   changed_when: false
+  tags:
+    - czertainly_secret
 
 # this apply only when changed - there must be more elegant way, but
 # problem with dockerconfigjson is that thre is 2 times base64 encoded
@@ -21,6 +25,8 @@
     namespace: czertainly
     state: present
     src: /root/install/docker-secret.yaml
+  tags:
+    - czertainly_secret
 
 # Download sample trusted-certificates.pem file
 - name: Download sample trusted-certificates.pem file
@@ -33,9 +39,7 @@
     group: czertainly
     mode: 0644
   tags:
-    - czertainly
     - czertainly_trusted_certificates
-    - czertainly_app
 
 #- debug: var=ansible
 
@@ -63,9 +67,6 @@
     - cert-manager
     - ingress-nginx
   tags:
-    - czertainly
-    - czertainly_app
-    - czertainly_helm_install
 
 # - name: debug
 #   shell:
@@ -81,14 +82,14 @@
 #     - czertainly
 #     - czertainly_app
 #     - czertainly_helm_install
+    - czertainly_wait4prerequisites
 
 - name: download default values.yaml file
   shell: helm show values oci://harbor.3key.company/czertainly-helm/czertainly > /tmp/czertainly-values-default.yaml
   changed_when: false
   tags:
-    - czertainly
     - czertainly_values
-    - czertainly_app
+    - czertainly_values_default
 
 - name: copy default czertainly-values.yaml file
   template:
@@ -98,25 +99,22 @@
     group: czertainly
     mode: '0644'
   tags:
-    - czertainly
     - czertainly_values
-    - czertainly_app
+    - czertainly_values_default
 
 - name: copy local customized czertainly-values.yaml file
   ansible.builtin.template:
     src: "czertainly-values.local.yaml"
     dest: "/root/install/czertainly-values.local.yaml"
   tags:
-    - czertainly
     - czertainly_values
-    - czertainly_app
+    - czertainly_values_local
 
 - name: mandatory sleep 15
   shell:
     cmd: "sleep 15"
   tags:
-    - czertainly
-    - czertainly_app
+    - czertainly_sleep15
 
 - name: install czertainly
   kubernetes.core.helm:
@@ -128,9 +126,7 @@
       - /root/install/czertainly-values.yaml
       - /root/install/czertainly-values.local.yaml
   tags:
-    - czertainly
-    - czertainly_app
-    - czertainly_helm_install
+    - czertainly_install
 
 # installing sometimes fails with following error, no matter if install via kubernetes.core.helm or from commandline :(
 
