@@ -67,21 +67,6 @@
     - cert-manager
     - ingress-nginx
   tags:
-
-# - name: debug
-#   shell:
-#     cmd: "/var/lib/rancher/rke2/bin/kubectl -n ingress-nginx get pods -o json |jq '.items[].status.phase' | sort -u"
-#   register: out
-#   tags:
-#     - czertainly
-#     - czertainly_app
-#     - czertainly_helm_install
-
-# - debug: var=out
-#   tags:
-#     - czertainly
-#     - czertainly_app
-#     - czertainly_helm_install
     - czertainly_wait4prerequisites
 
 - name: download default values.yaml file

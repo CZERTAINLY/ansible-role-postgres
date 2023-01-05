@@ -29,7 +29,6 @@
   notify:
     restart postgresql
 
-# TODO: really "databases: all" is required?
 - name: update pg_hba.conf. Grant user czertainly access to all databases on server.
   community.postgresql.postgresql_pg_hba:
     dest: /etc/postgresql/13/main/pg_hba.conf
@@ -59,7 +58,7 @@
   community.postgresql.postgresql_user:
     db: czertainlydb
     name: czertainlyuser
-    password: your-strong-password # TODO take from some config
+    password: your-strong-password
   when: not ansible_check_mode # will fail in check mode if db isn't present
   tags:
     - postgress_czertainly_user
