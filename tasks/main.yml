@@ -1,0 +1,35 @@
+---
+# tasks file for czertainly
+
+- name: Install open-vm-tools packages
+  apt:
+    name: open-vm-tools
+    state: latest
+    update_cache: no
+  tags:
+    - apt-packages
+    - virt-packages
+  when: false # TODO check for virtualization type but also conflict with idea of creating appliance in VirtualBox and exporting for others
+
+- name: allow GIT_ variables in sshd_config
+  ansible.builtin.lineinfile:
+    path: /etc/ssh/sshd_config
+    regex: '^AcceptEnv'
+    line: 'AcceptEnv LANG LC_* GIT_*'
+  notify: restart sshd
+  tags:
+    - ssh
+
+- name: install and configure postgres
+  include: postgres.yml
+  tags:
+    - postgress
+
+# this causes postgres (and any other handler) to restart
+- name: flush handlers
+  meta: flush_handlers
+
+- name: install CZERTAINLY
+  include: czertainly.yml
+  tags:
+    - czertainly
