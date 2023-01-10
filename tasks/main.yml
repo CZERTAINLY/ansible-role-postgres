@@ -28,8 +28,3 @@
 # this causes postgres (and any other handler) to restart
 - name: flush handlers
   meta: flush_handlers
-
-- name: install CZERTAINLY
-  include: czertainly.yml
-  tags:
-    - czertainly
