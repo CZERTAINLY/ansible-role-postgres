@@ -1,0 +1,28 @@
+---
+- name: create /etc/profile.d/proxy.sh
+  template:
+    src: "proxy.sh.j2"
+    dest: "/etc/profile.d/proxy.sh"
+    owner: root
+    group: root
+    mode: '0755'
+
+# https://docs.rke2.io/advanced
+- name: create /etc/default/rke2-server|agent
+  template:
+    src: "rke2-server-agent.j2"
+    dest: "/etc/default/{{ item }}"
+    owner: root
+    group: root
+    mode: '0644'
+  with_items:
+    - rke2-server
+    - rke2-agent
+
+- name: create /etc/apt/apt.conf.d/80proxy
+  template:
+    src: "80proxy.j2"
+    dest: /etc/apt/apt.conf.d/80proxy
+    owner: root
+    group: root
+    mode: '0644'

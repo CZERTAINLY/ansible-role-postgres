@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# do not modify directly - ansible managed
+
+{% if proxy is defined %}
+# http_proxy is for curl. Manual https://curl.se/docs/manpage.html#ENVIRONMENT
+# says "The environment variables can be specified in lower case or
+# upper case. The lower case version has precedence. http_proxy is an
+# exception as it is only available in lower case."
+
+# HTTP_PROXY is for any other programs.
+
+{% if proxy.http is defined %}
+export http_proxy="{{ proxy.http }}"
+export HTTP_PROXY="{{ proxy.http }}"
+{% endif %}
+{% if proxy.https is defined %}
+export HTTPS_PROXY="{{ proxy.https }}"
+{% endif %}
+{% if proxy.ftp is defined %}
+export FTP_PROXY="{{ proxy.ftp }}"
+{% endif %}
+{% if proxy.ftps is defined %}
+export FTPS_PROXY="{{ proxy.ftps }}"
+{% endif %}
+{% if proxy.dont_use_for is defined %}
+export NO_PROXY="{{ proxy.dont_use_for | join(', ') }}"
+{% endif %}
+
+{% endif %}

@@ -1,0 +1,16 @@
+# do not modify directly - ansible managed
+
+{% if proxy is defined %}
+{% if proxy.http is defined %}
+Acquire::http::proxy "{{ proxy.http }}";
+{% endif %}
+{% if proxy.https is defined %}
+Acquire::https::proxy "{{ proxy.https }}";
+{% endif %}
+{% if proxy.ftp is defined %}
+Acquire::ftp::proxy "{{ proxy.ftp }}";
+{% endif %}
+{% if proxy.ftps is defined %}
+Acquire::ftps::proxy "{{ proxy.ftps }}";
+{% endif %}
+{% endif %}
