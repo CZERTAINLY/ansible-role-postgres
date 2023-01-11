@@ -24,7 +24,7 @@ export FTP_PROXY="{{ proxy.ftp }}"
 export FTPS_PROXY="{{ proxy.ftps }}"
 {% endif %}
 {% if proxy.dont_use_for is defined %}
-export NO_PROXY={{ proxy.dont_use_for | join(', ') }}
+export NO_PROXY="{{ proxy.dont_use_for | join(', ') }}"
 {% endif %}
 
 {% endif %}
