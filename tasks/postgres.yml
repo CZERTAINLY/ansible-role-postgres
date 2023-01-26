@@ -33,7 +33,7 @@
   community.postgresql.postgresql_pg_hba:
     dest: /etc/postgresql/13/main/pg_hba.conf
     contype: host
-    users: czertainlyuser
+    users: "{{ postgres.username }}"
     source: all
     databases: all
     method: md5
@@ -48,7 +48,7 @@
   become: yes
   become_user: postgres
   community.postgresql.postgresql_db:
-    name: czertainlydb
+    name: "{{ postgres.database }}"
   tags:
     - postgress_czertainly_db
 
@@ -56,9 +56,9 @@
   become: yes
   become_user: postgres
   community.postgresql.postgresql_user:
-    db: czertainlydb
-    name: czertainlyuser
-    password: your-strong-password
+    db: "{{ postgres.database }}"
+    name: "{{ postgres.username }}"
+    password: "{{ postgres.password }}"
   when: not ansible_check_mode # will fail in check mode if db isn't present
   tags:
     - postgress_czertainly_user
@@ -70,8 +70,8 @@
     db: postgres
     privs: ALL
     type: database
-    obj: czertainlydb
-    role: czertainlyuser
+    obj: "{{ postgres.database }}"
+    role: "{{ postgres.username }}"
   when: not ansible_check_mode # will fail in check mode if db isn't present
   tags:
     - postgress_czertainly_grant_all
