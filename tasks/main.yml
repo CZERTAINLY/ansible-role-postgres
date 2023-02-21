@@ -20,11 +20,6 @@
   tags:
     - ssh
 
-- name: configure http/ftp proxy
-  include: http_proxy.yml
-  tags:
-    - http_proxy
-
 - name: install and configure postgres
   include: postgres.yml
   tags:
