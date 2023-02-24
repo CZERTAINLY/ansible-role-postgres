@@ -1,8 +1,24 @@
-# CZERTAINLY-Appliance-Host-Config
+# Ansible Role: postgres
 
-Basic config of host running CZERTAINLY appliance. It installs:
-* [Postgres](tasks/postgres.yml)
-* [CZERTAINLY](tasks/czertainly.yml)
+Install & create postgress database on Debian GNU/Linux.
 
-and via dependencies;
-* RKE2 & Helm
+## Requirements
+The role is designed for [Debian GNU/Linux](https://debian.org).
+
+## Role Variables
+
+```
+postgres:
+  username: user-to-create
+  password: your-strong-password
+  database: database-to-create
+```
+
+## Example Playbook
+```
+- hosts: localhost
+  connection: local
+
+  roles:
+    - role: postgres
+```
