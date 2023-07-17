@@ -1,5 +1,5 @@
 ---
-# Configure offical PostgreSQL Repository if required
+# Configure official PostgreSQL Repository if required
 - name: get default postgres version for distribution
   set_fact:
     default_postgres_version: "{{ postgres_internal[ansible_distribution_release] }}"
@@ -16,10 +16,6 @@
   debug:
     msg: "default_postgres_version: {{ default_postgres_version }}; postgres_version: {{ postgres_version }}"
 
-- name: configure offical distribution list if desired
-  template:
-    src: "offical-postgres.list.j2"
-    dest: "/etc/apt/sources.list.d/offical-postgres.list"
 - name: add official PostgreSQL signing key
   ansible.builtin.apt_key:
     id: B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8
@@ -30,20 +26,24 @@
   tags:
     - postgres_official_list
 
+- name: configure official distribution list if desired
+  ansible.builtin.template:
+    src: "official-postgres.list.j2"
+    dest: "/etc/apt/sources.list.d/official-postgres.list"
     owner: root
     group: root
     mode: '0644'
   when: postgres.repository is defined and postgres.repository == 'official'
   register: postgres_official_list
   tags:
-    - postgres_offical_list_template
+    - postgres_official_list
 
 - name: update package list
   ansible.builtin.apt:
     update_cache: yes
   when: postgres_official_list is defined and postgres_official_list.changed
   tags:
-    - postgres_offical_list_template
+    - postgres_official_list
 
 - name: gather the package facts
   ansible.builtin.package_facts:
