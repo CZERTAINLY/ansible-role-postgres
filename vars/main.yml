@@ -1,2 +1,6 @@
 ---
-# vars file for czertainly
+# default PostgreSQL versions for serveral debian releases
+postgres_internal:
+  buster: 11
+  bullseye: 13
+  bookworm: 15

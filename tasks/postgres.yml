@@ -1,11 +1,77 @@
 ---
-# tasks file for postgres
+# Configure official PostgreSQL Repository if required
+- name: get default postgres version for distribution
+  set_fact:
+    default_postgres_version: "{{ postgres_internal[ansible_distribution_release] }}"
 
-# Install Postgres
-- name: install postgres package
+- name: determine which postgres version we are going to install
+  set_fact:
+    postgres_version: "{{ postgres.version | default(default_postgres_version) }}"
+
+- name: construct postgres package name
+  set_fact:
+    postgres_package: "postgresql-{{ postgres_version }}"
+
+- name: "will install {{ postgres_package }}"
+  debug:
+    msg: "default_postgres_version: {{ default_postgres_version }}; postgres_version: {{ postgres_version }}"
+
+- name: add official PostgreSQL signing key
+  ansible.builtin.apt_key:
+    id: B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8
+    url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+    keyring: /etc/apt/trusted.gpg.d/www.postgresql.org.gpg
+    state: present
+  when: postgres.repository is defined and postgres.repository == 'official'
+  tags:
+    - postgres_official_list
+
+- name: configure official distribution list if desired
+  ansible.builtin.template:
+    src: "official-postgres.list.j2"
+    dest: "/etc/apt/sources.list.d/official-postgres.list"
+    owner: root
+    group: root
+    mode: '0644'
+  when: postgres.repository is defined and postgres.repository == 'official'
+  register: postgres_official_list
+  tags:
+    - postgres_official_list
+
+- name: update package list
+  ansible.builtin.apt:
+    update_cache: yes
+  when: postgres_official_list is defined and postgres_official_list.changed
+  tags:
+    - postgres_official_list
+
+- name: gather the package facts
+  ansible.builtin.package_facts:
+    manager: auto
+  when: ansible_facts.packages is not defined
+  tags:
+    - postgres_check4other
+
+- name: filterout all installed postgress versions
+  set_fact:
+    postgres_packages: "{{ ansible_facts.packages | dict2items | selectattr('key', 'match', '^postgresql-[0-9]+$') | map(attribute='key') | list }}"
+  tags:
+    - postgres_check4other
+
+# the reason for filter above is that this loop print out every not matched package
+- name: "fail if there is already other than {{ postgres_package }} package installed"
+  ansible.builtin.fail:
+    msg: "Found a different PostgreSQL package: {{ item }}"
+  when: item != postgres_package and item is regex ("postgresql-[0-9]+")
+  loop: "{{ postgres_packages }}"
+  tags:
+    - postgres_check4other
+
+# install Postgres
+- name: "install {{ postgres_package }} package"
   apt:
     name:
-      - postgresql
+      - "{{ postgres_package }}"
       - python3-psycopg2 # needed for ansible postgress modules
     state: latest
     cache_valid_time: 86400
@@ -20,7 +86,7 @@
     - postgres_enable
 
 - name: Postgresql should listen on all ports
-  lineinfile: dest="/etc/postgresql/13/main/postgresql.conf"
+  lineinfile: dest="/etc/postgresql/{{ postgres_version }}/main/postgresql.conf"
               regexp="^listen_addresses"
               line="listen_addresses = '*'"
               state=present
@@ -31,7 +97,7 @@
 
 - name: update pg_hba.conf. Grant user czertainly access to all databases on server.
   community.postgresql.postgresql_pg_hba:
-    dest: /etc/postgresql/13/main/pg_hba.conf
+    dest: "/etc/postgresql/{{ postgres_version }}/main/pg_hba.conf"
     contype: host
     users: "{{ postgres.username | default('czertainlyuser') }}"
     source: all
@@ -75,3 +141,12 @@
   when: not ansible_check_mode # will fail in check mode if db isn't present
   tags:
     - postgress_czertainly_grant_all
+
+- name: create keycloak schema
+  become: yes
+  become_user: postgres
+  community.postgresql.postgresql_schema:
+    name: keycloak
+    owner: czertainlyuser
+  tags:
+    - postgress_keycloak
