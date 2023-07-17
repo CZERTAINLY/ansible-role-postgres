@@ -1,6 +1,6 @@
 ---
 # install Postgres
-- name: "install {{ postgres_package }} package"
+- name: "install needed dependencies"
   apt:
     name:
       - gpg # needed for ansible.builtin.apt_key
