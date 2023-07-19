@@ -1,4 +1,15 @@
 ---
+# install Postgres
+- name: "install needed dependencies"
+  apt:
+    name:
+      - gpg # needed for ansible.builtin.apt_key
+      - python3-psycopg2 # needed for ansible postgress modules
+    state: latest
+    cache_valid_time: 86400
+  tags:
+    - apt-packages
+
 # Configure official PostgreSQL Repository if required
 - name: get default postgres version for distribution
   set_fact:
