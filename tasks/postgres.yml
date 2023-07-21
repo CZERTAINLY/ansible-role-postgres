@@ -152,12 +152,3 @@
   when: not ansible_check_mode # will fail in check mode if db isn't present
   tags:
     - postgress_czertainly_grant_all
-
-- name: create keycloak schema
-  become: yes
-  become_user: postgres
-  community.postgresql.postgresql_schema:
-    name: keycloak
-    owner: czertainlyuser
-  tags:
-    - postgress_keycloak
