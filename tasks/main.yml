@@ -23,7 +23,7 @@
 - name: install and configure postgres
   include: postgres.yml
   tags:
-    - postgress
+    - postgres
 
 # this causes postgres (and any other handler) to restart
 - name: flush handlers

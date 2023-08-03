@@ -1,6 +1,6 @@
 # Ansible Role: postgres
 
-Install & create postgress database on Debian GNU/Linux.
+Install & create PostgreSQL database on Debian GNU/Linux.
 
 ## Requirements
 The role is designed for [Debian GNU/Linux](https://debian.org).
