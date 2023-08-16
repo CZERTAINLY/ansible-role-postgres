@@ -21,7 +21,7 @@
     - ssh
 
 - name: install and configure postgres
-  include: postgres.yml
+  include_tasks: postgres.yml
   tags:
     - postgres
 
