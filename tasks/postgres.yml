@@ -4,7 +4,7 @@
   apt:
     name:
       - gpg # needed for ansible.builtin.apt_key
-      - python3-psycopg2 # needed for ansible postgress modules
+      - python3-psycopg2 # needed for ansible postgres modules
     state: latest
     cache_valid_time: 86400
   tags:
@@ -63,7 +63,7 @@
   tags:
     - postgres_check4other
 
-- name: filterout all installed postgress versions
+- name: filterout all installed postgres versions
   set_fact:
     postgres_packages: "{{ ansible_facts.packages | dict2items | selectattr('key', 'match', '^postgresql-[0-9]+$') | map(attribute='key') | list }}"
   tags:
@@ -83,7 +83,7 @@
   apt:
     name:
       - "{{ postgres_package }}"
-      - python3-psycopg2 # needed for ansible postgress modules
+      - python3-psycopg2 # needed for ansible postgres modules
     state: latest
     cache_valid_time: 86400
   tags:
@@ -117,7 +117,7 @@
     create: true
   tags:
     - postgres_pg_hba
-    - postgress_czertainly_remote_access
+    - postgres_czertainly_remote_access
   notify:
     restart postgresql
 
@@ -127,7 +127,7 @@
   community.postgresql.postgresql_db:
     name: "{{ postgres.database | default('czertainlydb') }}"
   tags:
-    - postgress_czertainly_db
+    - postgres_czertainly_db
 
 - name: create czertainlyuser
   become: yes
@@ -138,7 +138,7 @@
     password: "{{ postgres.password | default('your-strong-password') }}"
   when: not ansible_check_mode # will fail in check mode if db isn't present
   tags:
-    - postgress_czertainly_user
+    - postgres_czertainly_user
 
 - name: grant ALL priv to czertainlydb to czertainlyuser
   become: yes
@@ -151,4 +151,4 @@
     role: "{{ postgres.username | default('czertainlyuser') }}"
   when: not ansible_check_mode # will fail in check mode if db isn't present
   tags:
-    - postgress_czertainly_grant_all
+    - postgres_czertainly_grant_all

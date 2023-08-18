@@ -21,9 +21,9 @@
     - ssh
 
 - name: install and configure postgres
-  include: postgres.yml
+  include_tasks: postgres.yml
   tags:
-    - postgress
+    - postgres
 
 # this causes postgres (and any other handler) to restart
 - name: flush handlers
