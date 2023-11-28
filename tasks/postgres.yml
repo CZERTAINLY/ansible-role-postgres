@@ -152,3 +152,15 @@
   when: not ansible_check_mode # will fail in check mode if db isn't present
   tags:
     - postgress_czertainly_grant_all
+
+- name: configure max_connections
+  ansible.builtin.template:
+    src: "max_connections.j2"
+    dest: "/etc/postgresql/{{ postgres_version }}/main/conf.d/max_connections.conf"
+    owner: root
+    group: root
+    mode: '0644'
+  tags:
+    - postgres_max_connections
+  notify:
+    restart postgresql
