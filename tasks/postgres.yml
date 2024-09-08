@@ -1,33 +1,33 @@
 ---
 # install Postgres
-- name: "install needed dependencies"
-  apt:
+- name: Install needed dependencies
+  ansible.builtin.apt:
     name:
       - gpg # needed for ansible.builtin.apt_key
       - python3-psycopg2 # needed for ansible postgress modules
-    state: latest
+    state: present
     cache_valid_time: 86400
   tags:
     - apt-packages
 
 # Configure official PostgreSQL Repository if required
-- name: get default postgres version for distribution
-  set_fact:
+- name: Get default postgres version for distribution
+  ansible.builtin.set_fact:
     default_postgres_version: "{{ postgres_internal[ansible_distribution_release] }}"
 
-- name: determine which postgres version we are going to install
-  set_fact:
+- name: Determine which postgres version we are going to install
+  ansible.builtin.set_fact:
     postgres_version: "{{ postgres.version | default(default_postgres_version) }}"
 
-- name: construct postgres package name
-  set_fact:
+- name: Construct postgres package name
+  ansible.builtin.set_fact:
     postgres_package: "postgresql-{{ postgres_version }}"
 
-- name: "will install {{ postgres_package }}"
-  debug:
+- name: Will install {{ postgres_package }}
+  ansible.builtin.debug:
     msg: "default_postgres_version: {{ default_postgres_version }}; postgres_version: {{ postgres_version }}"
 
-- name: add official PostgreSQL signing key
+- name: Add official PostgreSQL signing key
   ansible.builtin.apt_key:
     id: B97B0AFCAA1A47F044F244A07FCC7D46ACCC4CF8
     url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
@@ -37,7 +37,7 @@
   tags:
     - postgres_official_list
 
-- name: configure official distribution list if desired
+- name: Configure official distribution list if desired
   ansible.builtin.template:
     src: "official-postgres.list.j2"
     dest: "/etc/apt/sources.list.d/official-postgres.list"
@@ -49,28 +49,28 @@
   tags:
     - postgres_official_list
 
-- name: update package list
+- name: Update package list
   ansible.builtin.apt:
-    update_cache: yes
+    update_cache: true
   when: postgres_official_list is defined and postgres_official_list.changed
   tags:
     - postgres_official_list
 
-- name: gather the package facts
+- name: Gather the package facts
   ansible.builtin.package_facts:
     manager: auto
   when: ansible_facts.packages is not defined
   tags:
     - postgres_check4other
 
-- name: filterout all installed postgress versions
-  set_fact:
+- name: Filterout all installed postgress versions
+  ansible.builtin.set_fact:
     postgres_packages: "{{ ansible_facts.packages | dict2items | selectattr('key', 'match', '^postgresql-[0-9]+$') | map(attribute='key') | list }}"
   tags:
     - postgres_check4other
 
 # the reason for filter above is that this loop print out every not matched package
-- name: "fail if there is already other than {{ postgres_package }} package installed"
+- name: Fail if there is already a package installed other than {{ postgres_package }}
   ansible.builtin.fail:
     msg: "Found a different PostgreSQL package: {{ item }}"
   when: item != postgres_package and item is regex ("postgresql-[0-9]+")
@@ -79,34 +79,35 @@
     - postgres_check4other
 
 # install Postgres
-- name: "install {{ postgres_package }} package"
-  apt:
+- name: Install {{ postgres_package }}
+  ansible.builtin.apt:
     name:
       - "{{ postgres_package }}"
       - python3-psycopg2 # needed for ansible postgress modules
-    state: latest
+    state: present
     cache_valid_time: 86400
   tags:
     - apt-packages
 
-- name: enable Postgres
+- name: Enable Postgres
   ansible.builtin.systemd:
     name: postgresql
-    enabled: yes
+    enabled: true
   tags:
     - postgres_enable
 
 - name: Postgresql should listen on all ports
-  lineinfile: dest="/etc/postgresql/{{ postgres_version }}/main/postgresql.conf"
-              regexp="^listen_addresses"
-              line="listen_addresses = '*'"
-              state=present
+  ansible.builtin.lineinfile:
+    dest: "/etc/postgresql/{{ postgres_version }}/main/postgresql.conf"
+    regexp: "^listen_addresses"
+    line: "listen_addresses = '*'"
+    state: present
   tags:
     - postgres_listen
   notify:
     restart postgresql
 
-- name: update pg_hba.conf. Grant user czertainly access to all databases on server.
+- name: Update pg_hba.conf. Grant user czertainly access to all databases on server.
   community.postgresql.postgresql_pg_hba:
     dest: "/etc/postgresql/{{ postgres_version }}/main/pg_hba.conf"
     contype: host
@@ -121,16 +122,16 @@
   notify:
     restart postgresql
 
-- name: create czertainlydb
-  become: yes
+- name: Create czertainlydb
+  become: true
   become_user: postgres
   community.postgresql.postgresql_db:
     name: "{{ postgres.database | default('czertainlydb') }}"
   tags:
     - postgress_czertainly_db
 
-- name: create czertainlyuser
-  become: yes
+- name: Create czertainlyuser
+  become: true
   become_user: postgres
   community.postgresql.postgresql_user:
     db: "{{ postgres.database | default('czertainlydb') }}"
@@ -140,8 +141,8 @@
   tags:
     - postgress_czertainly_user
 
-- name: grant ALL priv to czertainlydb to czertainlyuser
-  become: yes
+- name: Grant ALL priv to czertainlydb to czertainlyuser
+  become: true
   become_user: postgres
   community.postgresql.postgresql_privs:
     db: postgres
@@ -153,7 +154,7 @@
   tags:
     - postgress_czertainly_grant_all
 
-- name: configure max_connections
+- name: Configure max_connections
   ansible.builtin.template:
     src: "max_connections.j2"
     dest: "/etc/postgresql/{{ postgres_version }}/main/conf.d/max_connections.conf"
