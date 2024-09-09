@@ -2,16 +2,16 @@
 # tasks file for czertainly
 
 - name: Install open-vm-tools packages
-  apt:
+  ansible.builtin.apt:
     name: open-vm-tools
-    state: latest
-    update_cache: no
+    state: present
+    update_cache: false
   tags:
     - apt-packages
     - virt-packages
   when: false # TODO check for virtualization type but also conflict with idea of creating appliance in VirtualBox and exporting for others
 
-- name: allow GIT_ variables in sshd_config
+- name: Allow GIT_ variables in sshd_config
   ansible.builtin.lineinfile:
     path: /etc/ssh/sshd_config
     regex: '^AcceptEnv'
@@ -20,11 +20,11 @@
   tags:
     - ssh
 
-- name: install and configure postgres
-  include: postgres.yml
+- name: Install and configure postgres
+  ansible.builtin.include_tasks: postgres.yml
   tags:
     - postgress
 
 # this causes postgres (and any other handler) to restart
-- name: flush handlers
-  meta: flush_handlers
+- name: Flush handlers
+  ansible.builtin.meta: flush_handlers
