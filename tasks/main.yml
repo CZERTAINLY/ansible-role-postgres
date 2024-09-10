@@ -16,7 +16,7 @@
     path: /etc/ssh/sshd_config
     regex: '^AcceptEnv'
     line: 'AcceptEnv LANG LC_* GIT_*'
-  notify: restart sshd
+  notify: Restart sshd
   tags:
     - ssh
 

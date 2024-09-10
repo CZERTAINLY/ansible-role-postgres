@@ -105,7 +105,7 @@
   tags:
     - postgres_listen
   notify:
-    restart postgresql
+    Restart postgresql
 
 - name: Update pg_hba.conf. Grant user czertainly access to all databases on server.
   community.postgresql.postgresql_pg_hba:
@@ -120,7 +120,7 @@
     - postgres_pg_hba
     - postgress_czertainly_remote_access
   notify:
-    restart postgresql
+    Restart postgresql
 
 - name: Create czertainlydb
   become: true
@@ -164,4 +164,4 @@
   tags:
     - postgres_max_connections
   notify:
-    restart postgresql
+    Restart postgresql
