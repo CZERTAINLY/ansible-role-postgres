@@ -25,7 +25,7 @@
     file: postgres.yml
     apply:
       tags: [postgress]
-    tags: [postgress]
+  tags: [postgress]
 
 # this causes postgres (and any other handler) to restart
 - name: Flush handlers
